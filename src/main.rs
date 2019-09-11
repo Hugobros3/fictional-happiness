@@ -17,7 +17,7 @@ pub fn main() -> Result<(), String> {
     // let texture_creator = display.canvas.texture_creator();
     // let texture = texture_creator.load_texture("robot.jpg")?;
 
-    while !display.should_close {
+    while *display.should_close.borrow_mut() != false {
         display.update();
         // display.canvas.clear();
         // display.canvas.copy(&texture, None, Rect::new(0,0, 128, 128))?;

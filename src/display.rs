@@ -2,14 +2,15 @@ use sdl2::image::InitFlag;
 use sdl2::event::Event;
 use sdl2::pixels::Color;
 use sdl2::image::LoadTexture;
+use std::cell::RefCell;
 
 pub struct Display {
     // Private field
-    event_pump: sdl2::EventPump,
+    event_pump: RefCell<sdl2::EventPump>,
     // Accessible field
     pub texture_creator: sdl2::render::TextureCreator<sdl2::video::WindowContext>,
-    pub canvas: sdl2::render::Canvas<sdl2::video::Window>,
-    pub should_close: bool
+    pub canvas: RefCell<sdl2::render::Canvas<sdl2::video::Window>>,
+    pub should_close: RefCell<bool>
 }
 
 impl Display {
@@ -42,27 +43,27 @@ impl Display {
 
         let texture_creator = canvas.texture_creator();   
 
-        return Display{event_pump, texture_creator, canvas, should_close: false};
+        return Display{event_pump: RefCell::new(event_pump), texture_creator, canvas: RefCell::new(canvas), should_close: RefCell::new(false)};
     }
 
     // Poll events and clear screen
-    pub fn update(&mut self) {
-        for event in self.event_pump.poll_iter() {
+    pub fn update(&self) {
+        for event in self.event_pump.borrow_mut().poll_iter() {
             match event {
-                Event::Quit { .. } => self.should_close = true,
+                Event::Quit { .. } => *self.should_close.borrow_mut() = true,
                 _ => {}
             }
         }
-        self.canvas.clear();
+        self.canvas.borrow_mut().clear();
     }
 
     // Show current frame to screen
-    pub fn present(&mut self) {
-        self.canvas.present();
+    pub fn present(&self) {
+        self.canvas.borrow_mut().present();
     }
 
     // Load a texture
-    pub fn load_texture(&mut self, src: &str) -> sdl2::render::Texture {
+    pub fn load_texture(&self, src: &str) -> sdl2::render::Texture {
         self.texture_creator.load_texture(src).unwrap()
     }
 }
